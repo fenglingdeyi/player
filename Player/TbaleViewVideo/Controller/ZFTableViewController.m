@@ -107,7 +107,7 @@
         playerModel.title            = model.title;
         playerModel.videoURL         = videoURL;
         playerModel.placeholderImageURLString = model.coverForFeed;
-        playerModel.tableView        = weakSelf.tableView;
+        playerModel.scrollView        = weakSelf.tableView;
         playerModel.indexPath        = weakIndexPath;
         // 赋值分辨率字典
         playerModel.resolutionDic    = dic;

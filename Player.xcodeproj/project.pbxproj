@@ -40,6 +40,8 @@
 		CCE1C1401C9AA131004C95AC /* videoData.json in Resources */ = {isa = PBXBuildFile; fileRef = CCE1C13F1C9AA131004C95AC /* videoData.json */; };
 		CCEF1BF41CAA826900B0DD78 /* ZFDownloadingCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CCEF1BF31CAA826900B0DD78 /* ZFDownloadingCell.m */; };
 		CCEF1BF91CACB28E00B0DD78 /* ZFDownloadedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CCEF1BF81CACB28E00B0DD78 /* ZFDownloadedCell.m */; };
+		E82C14341FC1681E00CE4F83 /* UIWindow+CurrentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E82C14301FC1681E00CE4F83 /* UIWindow+CurrentViewController.m */; };
+		E82C14351FC1681E00CE4F83 /* UIAlertController+ZFPlayerRotation.m in Sources */ = {isa = PBXBuildFile; fileRef = E82C14331FC1681E00CE4F83 /* UIAlertController+ZFPlayerRotation.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -137,6 +139,10 @@
 		CCEF1BF31CAA826900B0DD78 /* ZFDownloadingCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZFDownloadingCell.m; sourceTree = "<group>"; };
 		CCEF1BF71CACB28E00B0DD78 /* ZFDownloadedCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZFDownloadedCell.h; sourceTree = "<group>"; };
 		CCEF1BF81CACB28E00B0DD78 /* ZFDownloadedCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZFDownloadedCell.m; sourceTree = "<group>"; };
+		E82C14301FC1681E00CE4F83 /* UIWindow+CurrentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIWindow+CurrentViewController.m"; sourceTree = "<group>"; };
+		E82C14311FC1681E00CE4F83 /* UIAlertController+ZFPlayerRotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIAlertController+ZFPlayerRotation.h"; sourceTree = "<group>"; };
+		E82C14321FC1681E00CE4F83 /* UIWindow+CurrentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIWindow+CurrentViewController.h"; sourceTree = "<group>"; };
+		E82C14331FC1681E00CE4F83 /* UIAlertController+ZFPlayerRotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIAlertController+ZFPlayerRotation.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -245,6 +251,10 @@
 		CC2877C51D9B60760097CEDA /* Category */ = {
 			isa = PBXGroup;
 			children = (
+				E82C14311FC1681E00CE4F83 /* UIAlertController+ZFPlayerRotation.h */,
+				E82C14331FC1681E00CE4F83 /* UIAlertController+ZFPlayerRotation.m */,
+				E82C14321FC1681E00CE4F83 /* UIWindow+CurrentViewController.h */,
+				E82C14301FC1681E00CE4F83 /* UIWindow+CurrentViewController.m */,
 				CC2877C61D9B60760097CEDA /* UINavigationController+ZFPlayerRotation.h */,
 				CC2877C71D9B60760097CEDA /* UINavigationController+ZFPlayerRotation.m */,
 				CC2877C81D9B60760097CEDA /* UITabBarController+ZFPlayerRotation.h */,
@@ -554,8 +564,10 @@
 				CC6C7AE51C9BDFE90000AD58 /* MoviePlayerViewController.m in Sources */,
 				CC69BD1F1DD2DC1B00019AC6 /* UIImageView+ZFCache.m in Sources */,
 				4947F7921BE996AC003093C8 /* AppDelegate.m in Sources */,
+				E82C14341FC1681E00CE4F83 /* UIWindow+CurrentViewController.m in Sources */,
 				CCE1C13B1C9AA11F004C95AC /* ZFVideoModel.m in Sources */,
 				CC725C321C894D2D00C3EAF2 /* ZFDownloadViewController.m in Sources */,
+				E82C14351FC1681E00CE4F83 /* UIAlertController+ZFPlayerRotation.m in Sources */,
 				CC2CC63F1CA24D4B0028BBDD /* ZFPlayerView.m in Sources */,
 				CC2CC63B1CA24D4B0028BBDD /* ZFBrightnessView.m in Sources */,
 				CC8693471CC9BF5E0037E71B /* ZFPVideoResolution.m in Sources */,
