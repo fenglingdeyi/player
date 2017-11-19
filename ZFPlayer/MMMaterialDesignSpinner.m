@@ -133,9 +133,7 @@ static NSString *kMMRingRotationAnimationKey = @"mmmaterialdesignspinner.rotatio
     animations.removedOnCompletion = NO;
     [self.progressLayer addAnimation:animations forKey:kMMRingStrokeAnimationKey];
     
-    
     self.isAnimating = true;
-    
     if (self.hidesWhenStopped) {
         self.hidden = NO;
     }

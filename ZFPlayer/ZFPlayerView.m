@@ -37,7 +37,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
     PanDirectionVerticalMoved    // 纵向移动
 };
 
-@interface ZFPlayerView () <UIGestureRecognizerDelegate,UIAlertViewDelegate>
+@interface ZFPlayerView () <UIGestureRecognizerDelegate,UIAlertViewDelegate,AVAssetResourceLoaderDelegate>
 
 /** 播放属性 */
 @property (nonatomic, strong) AVPlayer               *player;
@@ -108,6 +108,10 @@ typedef NS_ENUM(NSInteger, PanDirection){
 @property (nonatomic, assign) NSInteger              seekTime;
 @property (nonatomic, strong) NSURL                  *videoURL;
 @property (nonatomic, strong) NSDictionary           *resolutionDic;
+
+//用来判断是否开启滑动手势（在切换网络的时候给限制）
+@property (nonatomic, assign) BOOL isSlide;
+
 @end
 
 @implementation ZFPlayerView
@@ -120,7 +124,9 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (instancetype)init
 {
     self = [super init];
-    if (self) { [self initializeThePlayer]; }
+    if (self) { [self initializeThePlayer];
+        self.isSlide = YES;
+    }
     return self;
 }
 
@@ -233,11 +239,13 @@ typedef NS_ENUM(NSInteger, PanDirection){
 /**
  *  自动播放，默认不自动播放
  */
+
 - (void)autoPlayTheVideo
 {
     // 设置Player相关参数
     [self configZFPlayer];
 }
+
 
 /**
  *  player添加到fatherView上
@@ -324,6 +332,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
         [self.controlView zf_playerCancelAutoFadeOutControlView];
         [self.controlView zf_playerShowControlView];
     }
+    
 }
 
 /**
@@ -331,10 +340,14 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)pause
 {
+
     [self.controlView zf_playerPlayBtnState:NO];
-    if (self.state == ZFPlayerStatePlaying) { self.state = ZFPlayerStatePause;}
+    if (self.state == ZFPlayerStatePlaying ) { self.state = ZFPlayerStatePause;
+    }
     self.isPauseByUser = YES;
     [_player pause];
+    
+    
 }
 
 #pragma mark - Private Method
@@ -367,28 +380,37 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)configZFPlayer
 {
-    self.urlAsset = [AVURLAsset assetWithURL:self.videoURL];
+    
+//    NSMutableDictionary * headers = [NSMutableDictionary dictionary];
+//    [headers setObject:@"shzenon.cn"forKey:@"Referer"];
+//    self.urlAsset = [AVURLAsset URLAssetWithURL:self.videoURL options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers}];
+    
+//    NSURL * url = [URL URLWithString:@"mycustomscheme://tungsten.aaplimg.com/VOD/bipbop_adv_fmp4_example/master.m3u8"];
+//    AVURLAsset * asset = [AVURLAsset URLAssetWithURL: options:nil];
+//    [asset.resourceLoader setDelegate:self queue:dispatch_queue_create("TGLiveStreamController loader", nil)];
+//    AVPlayerItem * playerItem = [AVPlayerItem playerItemWithAsset:asset];
+    
+      self.urlAsset = [AVURLAsset URLAssetWithURL:self.videoURL options:nil];
     // 初始化playerItem
     self.playerItem = [AVPlayerItem playerItemWithAsset:self.urlAsset];
     // 每次都重新创建Player，替换replaceCurrentItemWithPlayerItem:，该方法阻塞线程
     self.player = [AVPlayer playerWithPlayerItem:self.playerItem];
-    
+    //新增适配
+    if([[UIDevice currentDevice] systemVersion].intValue>=10){
+        //      增加下面这行可以解决iOS10兼容性问题了
+        self.player.automaticallyWaitsToMinimizeStalling = NO;
+    }
     // 初始化playerLayer
     self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
-    
     self.backgroundColor = [UIColor blackColor];
     // 此处为默认视频填充模式
     self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;
-    
     // 自动播放
     self.isAutoPlay = YES;
-    
     // 添加播放进度计时器
     [self createTimer];
-    
     // 获取系统音量
     [self configureVolume];
-    
     // 本地文件不设置ZFPlayerStateBuffering状态
     if ([self.videoURL.scheme isEqualToString:@"file"]) {
         self.state = ZFPlayerStatePlaying;
@@ -403,7 +425,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
     [self play];
     self.isPauseByUser = NO;
 }
-
 /**
  *  创建手势
  */
@@ -413,7 +434,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
     self.singleTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(singleTapAction:)];
     self.singleTap.delegate                = self;
     self.singleTap.numberOfTouchesRequired = 1; //手指数
-    self.singleTap.numberOfTapsRequired    = 1;
     [self addGestureRecognizer:self.singleTap];
     
     // 双击(播放/暂停)
@@ -423,14 +443,12 @@ typedef NS_ENUM(NSInteger, PanDirection){
     self.doubleTap.numberOfTapsRequired    = 2;
 
     [self addGestureRecognizer:self.doubleTap];
-
     // 解决点击当前view时候响应其他控件事件
     [self.singleTap setDelaysTouchesBegan:YES];
     [self.doubleTap setDelaysTouchesBegan:YES];
     // 双击失败响应单击事件
     [self.singleTap requireGestureRecognizerToFail:self.doubleTap];
 }
-
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     if (self.isAutoPlay) {
@@ -472,7 +490,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
             break;
         }
     }
-    
     // 使用这个category的应用不会随着手机静音键打开而静音，可在手机静音下播放声音
     NSError *setCategoryError = nil;
     BOOL success = [[AVAudioSession sharedInstance]
@@ -480,7 +497,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
                     error: &setCategoryError];
     
     if (!success) { /* handle the error in setCategoryError */ }
-    
     // 监听耳机插入和拔掉通知
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:) name:AVAudioSessionRouteChangeNotification object:nil];
 }
@@ -495,11 +511,9 @@ typedef NS_ENUM(NSInteger, PanDirection){
     NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
     
     switch (routeChangeReason) {
-            
         case AVAudioSessionRouteChangeReasonNewDeviceAvailable:
             // 耳机插入
             break;
-            
         case AVAudioSessionRouteChangeReasonOldDeviceUnavailable:
         {
             // 耳机拔掉
@@ -507,16 +521,13 @@ typedef NS_ENUM(NSInteger, PanDirection){
             [self play];
         }
             break;
-            
         case AVAudioSessionRouteChangeReasonCategoryChange:
             // called at start - also when other audio wants to play
             NSLog(@"AVAudioSessionRouteChangeReasonCategoryChange");
             break;
     }
 }
-
 #pragma mark - KVO
-
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     if (object == self.player.currentItem) {
@@ -552,7 +563,15 @@ typedef NS_ENUM(NSInteger, PanDirection){
             NSTimeInterval timeInterval = [self availableDuration];
             CMTime duration             = self.playerItem.duration;
             CGFloat totalDuration       = CMTimeGetSeconds(duration);
+            
+           NSLog(@"Time Interval:%f",timeInterval);
+            
+             NSLog(@"totalDuration:%f",totalDuration);
+            
             [self.controlView zf_playerSetProgress:timeInterval / totalDuration];
+            
+            
+            
             
         } else if ([keyPath isEqualToString:@"playbackBufferEmpty"]) {
             
@@ -750,11 +769,13 @@ typedef NS_ENUM(NSInteger, PanDirection){
 /**
  *  屏幕方向发生变化会调用这里
  */
+#pragma mark - 屏幕方向发生变化会调用这里
 - (void)onDeviceOrientationChange
 {
     if (!self.player) { return; }
     if (ZFPlayerShared.isLockScreen) { return; }
     if (self.didEnterBackground) { return; };
+    if (self.playerPushedOrPresented) { return; }
     UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
     UIInterfaceOrientation interfaceOrientation = (UIInterfaceOrientation)orientation;
     if (orientation == UIDeviceOrientationFaceUp || orientation == UIDeviceOrientationFaceDown || orientation == UIDeviceOrientationUnknown ) { return; }
@@ -942,6 +963,12 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }
 }
 
+/*
+ 
+ self.isFullScreen = YES;
+ [self _fullScreenAction];
+ */
+
 /** 全屏 */
 - (void)_fullScreenAction
 {
@@ -979,11 +1006,20 @@ typedef NS_ENUM(NSInteger, PanDirection){
         self.playDidEnd   = NO;
         [self resetPlayer];
     } else {
+        
+        //播放完毕直接回到小屏幕 新增
+//        self.isFullScreen = YES;
+//        [self _fullScreenAction];
+        
         if (!self.isDragged) { // 如果不是拖拽中，直接结束播放
             self.playDidEnd = YES;
             [self.controlView zf_playerPlayEnd];
         }
     }
+    
+    NSLog(@"$$$$$$$$$$$$$$$$$$$$播放结束");
+    
+    
 }
 
 /**
@@ -1052,6 +1088,11 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)panDirection:(UIPanGestureRecognizer *)pan
 {
+    
+    if (!self.isSlide) {
+        return;
+    }
+    
     //根据在view上Pan的位置，确定是调音量还是亮度
     CGPoint locationPoint = [pan locationInView:self];
     
@@ -1240,6 +1281,22 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }
 }
 
+
+//用来显示网络提醒
+-(void)NetWorkemind{
+    
+            //        self.placeholderImageView.alpha = 0;
+    
+        //显示出来提示语
+            [self.controlView zf_playerNetWork];
+        //用来控制滑动事件
+            self.isSlide = NO;
+        //显示背景图
+            [self.controlView zf_playerNotImage];
+    
+}
+
+
 /**
  *  根据playerItem，来添加移除观察者
  *
@@ -1349,6 +1406,16 @@ typedef NS_ENUM(NSInteger, PanDirection){
     self.videoURL = playerModel.videoURL;
 }
 
+- (void)setPlayerPushedOrPresented:(BOOL)playerPushedOrPresented {
+    _playerPushedOrPresented = playerPushedOrPresented;
+    if (playerPushedOrPresented) {
+        [self pause];
+    } else {
+        [self play];
+    }
+}
+
+
 #pragma mark - Getter
 
 - (AVAssetImageGenerator *)imageGenerator
@@ -1444,6 +1511,16 @@ typedef NS_ENUM(NSInteger, PanDirection){
 {
      [self configZFPlayer];
 }
+
+/** 网络变化按钮事件 */
+- (void)zf_controlView:(UIView *)controlView netAction:(UIButton *)sender
+{
+    [self play];
+    
+    self.isSlide = YES;
+}
+
+
 
 - (void)zf_controlView:(UIView *)controlView resolutionAction:(UIButton *)sender
 {
@@ -1552,5 +1629,45 @@ typedef NS_ENUM(NSInteger, PanDirection){
 }
 
 #pragma clang diagnostic pop
+
+
+
+#pragma mark - AVAssetResourceLoaderDelegate
+
+//- (BOOL)resourceLoader:(AVAssetResourceLoader *)resourceLoader shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loadingRequest {
+//    
+//    NSLog(@"player   player");
+//    
+//    dispatch_async(resourceLoader.delegateQueue, ^{
+//        NSURL * url = [NSURL URLWithString:@"http://training.shzenon.cn/2017_02_24_social_psychology_002.mp4"];
+//        NSMutableURLRequest *request = [loadingRequest.request mutableCopy];
+//        request.URL = url;
+//        
+//        // Add header
+//        [request setValue:@"shzenon.cn" forHTTPHeaderField:@"Referer"];
+//        
+//        NSURLResponse *response = nil;
+//        NSError *firstError = nil;
+//        
+//        // Issue request
+//        NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&firstError];
+//        
+//       
+//        
+//        [loadingRequest.dataRequest respondWithData:data];
+//        
+//         NSLog(@"!!!!%@",firstError);
+//        
+//        if (firstError) {
+//            [loadingRequest finishLoadingWithError:firstError];
+//        } else {
+//            [loadingRequest finishLoading];
+//        }
+//    });
+//    return YES;
+//}
+
+
+
 
 @end

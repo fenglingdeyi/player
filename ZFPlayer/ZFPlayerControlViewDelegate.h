@@ -46,6 +46,10 @@
 - (void)zf_controlView:(UIView *)controlView cneterPlayAction:(UIButton *)sender;
 /** 加载失败按钮事件 */
 - (void)zf_controlView:(UIView *)controlView failAction:(UIButton *)sender;
+
+/** 网络变化按钮事件 */
+- (void)zf_controlView:(UIView *)controlView netAction:(UIButton *)sender;
+
 /** 下载按钮事件 */
 - (void)zf_controlView:(UIView *)controlView downloadVideoAction:(UIButton *)sender;
 /** 切换分辨率按钮事件 */

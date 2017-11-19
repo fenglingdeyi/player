@@ -96,6 +96,8 @@
     [self.popUpView setColor:color];
 
     if (_autoAdjustTrackColor) {
+        
+        //[self.popUpView opaqueColor]
         super.minimumTrackTintColor = [self.popUpView opaqueColor];
     }
 }

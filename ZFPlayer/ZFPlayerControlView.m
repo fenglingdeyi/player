@@ -70,6 +70,10 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 @property (nonatomic, strong) UIView                  *resolutionView;
 /** 播放按钮 */
 @property (nonatomic, strong) UIButton                *playeBtn;
+
+//用来处理切换网络是的按钮显示
+@property (nonatomic,strong) UIButton *              netBtn;
+
 /** 加载失败按钮 */
 @property (nonatomic, strong) UIButton                *failBtn;
 /** 快进快退View*/
@@ -104,6 +108,8 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 /** 是否全屏播放 */
 @property (nonatomic, assign,getter=isFullScreen)BOOL fullScreen;
 
+
+
 @end
 
 @implementation ZFPlayerControlView
@@ -131,6 +137,8 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         [self addSubview:self.repeatBtn];
         [self addSubview:self.playeBtn];
         [self addSubview:self.failBtn];
+        
+        [self addSubview:self.netBtn];
         
         [self addSubview:self.fastView];
         [self.fastView addSubview:self.fastImageView];
@@ -271,9 +279,17 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         make.width.with.height.mas_equalTo(45);
     }];
     
+   
+    
     [self.failBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.equalTo(self);
         make.width.mas_equalTo(130);
+        make.height.mas_equalTo(33);
+    }];
+    
+    [self.netBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.equalTo(self);
+        make.width.mas_equalTo(240);
         make.height.mas_equalTo(33);
     }];
     
@@ -458,6 +474,18 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         [self.delegate zf_controlView:self failAction:sender];
     }
 }
+
+- (void)netBtnClick:(UIButton *)sender
+{
+    self.netBtn.hidden = YES;
+    //用来显示底部控制器
+    self.bottomImageView.hidden = NO;
+    if ([self.delegate respondsToSelector:@selector(zf_controlView:netAction:)]) {
+        [self.delegate zf_controlView:self netAction:sender];
+    }
+}
+
+
 
 - (void)progressSliderTouchBegan:(ASValueTrackingSlider *)sender
 {
@@ -736,7 +764,7 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 
         [_videoSlider setThumbImage:ZFPlayerImage(@"ZFPlayer_slider") forState:UIControlStateNormal];
         _videoSlider.maximumValue          = 1;
-        _videoSlider.minimumTrackTintColor = [UIColor whiteColor];
+        _videoSlider.minimumTrackTintColor = RGBA(179, 204, 61, 1);
         _videoSlider.maximumTrackTintColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.5];
         
         // slider开始滑动事件
@@ -848,6 +876,21 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     return _failBtn;
 }
 
+- (UIButton *)netBtn
+{
+    if (!_netBtn) {
+        _netBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+        [_netBtn setTitle:@"你当前不在WIFI网络下，点击继续" forState:UIControlStateNormal];
+        [_netBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        _netBtn.titleLabel.font = [UIFont systemFontOfSize:14.0];
+        _netBtn.backgroundColor = RGBA(0, 0, 0, 1);
+        [_netBtn addTarget:self action:@selector(netBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _netBtn;
+}
+
+
+
 - (UIView *)fastView
 {
     if (!_fastView) {
@@ -893,6 +936,7 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     if (!_placeholderImageView) {
         _placeholderImageView = [[UIImageView alloc] init];
         _placeholderImageView.userInteractionEnabled = YES;
+        _placeholderImageView.backgroundColor = [UIColor blackColor];
     }
     return _placeholderImageView;
 }
@@ -901,7 +945,7 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 {
     if (!_bottomProgressView) {
         _bottomProgressView                   = [[UIProgressView alloc] init];
-        _bottomProgressView.progressTintColor = [UIColor whiteColor];
+        _bottomProgressView.progressTintColor = [UIColor clearColor];
         _bottomProgressView.trackTintColor    = [UIColor clearColor];
     }
     return _bottomProgressView;
@@ -935,6 +979,7 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     self.playeBtn.hidden             = YES;
     self.resolutionView.hidden       = YES;
     self.failBtn.hidden              = YES;
+    self.netBtn.hidden              = YES;
     self.backgroundColor             = [UIColor clearColor];
     self.downLoadBtn.enabled         = YES;
     self.shrink                      = NO;
@@ -953,6 +998,7 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     self.playeBtn.hidden        = YES;
     self.downLoadBtn.enabled    = YES;
     self.failBtn.hidden         = YES;
+    self.netBtn.hidden         = YES;
     self.backgroundColor        = [UIColor clearColor];
     self.shrink                 = NO;
     self.showing                = NO;
@@ -990,6 +1036,19 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     [UIView animateWithDuration:1.0 animations:^{
         self.placeholderImageView.alpha = 0;
     }];
+}
+
+//改变网络（不隐藏placeholderImageView）
+-(void)zf_playerNotImage{
+
+    
+    [UIView animateWithDuration:0 animations:^{
+        self.placeholderImageView.alpha = 1;
+    }];
+
+    //屏蔽掉底按钮
+    self.bottomImageView.hidden = YES;
+    
 }
 
 /**
@@ -1136,6 +1195,16 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 {
     self.failBtn.hidden = NO;
 }
+
+//用来处理非WIFI网络下的事件
+
+- (void)zf_playerNetWork{
+    
+    self.netBtn.hidden = NO;
+    
+}
+
+
 
 /** 加载的菊花 */
 - (void)zf_playerActivity:(BOOL)animated

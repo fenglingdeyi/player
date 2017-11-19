@@ -61,6 +61,13 @@
  */
 - (void)zf_playerItemPlaying;
 
+
+/**
+ * 改变网络（不隐藏placeholderImageView）
+ */
+-(void)zf_playerNotImage;
+
+
 /** 
  * 播放完了
  */
@@ -148,5 +155,12 @@
  * 在cell播放
  */
 - (void)zf_playerCellPlay;
+
+
+/**
+ * 视频切换到非WIFI网络下
+ */
+- (void)zf_playerNetWork;
+
 
 @end
